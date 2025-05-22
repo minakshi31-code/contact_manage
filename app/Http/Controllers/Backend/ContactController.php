@@ -54,7 +54,7 @@ class ContactController extends Controller
     public function store(Request $request){
         $this->validate($request, [
             'full_name' => 'required',
-			 'mobile_number' => 'required|digits:10|unique:contacts,mobile_number',            
+			 'mobile_number' => 'required|numeric|unique:contacts,mobile_number',            
             		
         ]);
         DB::beginTransaction();
@@ -95,7 +95,7 @@ class ContactController extends Controller
     { 
        $this->validate($request, [
             'full_name' => 'required',
-			'mobile_number' => 'required|digits:10|unique:contacts,mobile_number,'.$id,            
+			'mobile_number' => 'required|numeric|unique:contacts,mobile_number,'.$id,            
             		
         ]);
 		
@@ -110,8 +110,7 @@ class ContactController extends Controller
         }catch(\Exception $e){ 
             DB::rollback();
             $error = !empty($e->getMessage())?$e->getMessage() : '';
-            ##store error log
-            storeActicityLog(trans('messages.error'),$error,Auth::user());
+             
             Session::flash('error', trans('messages.something'));
             return redirect()->route('contacts.index'); 
         }
@@ -137,15 +136,14 @@ class ContactController extends Controller
 	
 	 
 	public function importFileContacts(Request $request){
-		
-		$this->validate($request, [
-           // 'import_file' => 'required|max:10000|mimes:application/xml,xml',
-			     		
-        ]);
+		 
+	$file_mime_type = $request->import_file->getClientMimeType();
+	if($file_mime_type=='text/xml'){
+
       if (!empty($request->file('import_file'))) {
                 $xmlDataString = file_get_contents($request->file('import_file'));
                 $xmlObject = simplexml_load_string($xmlDataString);
-
+				 
                 $json = json_encode($xmlObject);
                 $array = json_decode($json, true);
 
@@ -175,7 +173,13 @@ class ContactController extends Controller
 					return redirect()->route('contacts.index');
                  }
             }
-    }
+		}
+		else{
+			
+				Session::flash('error','Please upload XML file!');
+				return redirect()->route('contacts.index');
+		}
+	}
 	
 	public function getAjaxList(Request $request){
         $list = $this->contactsRepo->getAjaxList();

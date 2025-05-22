@@ -16,6 +16,7 @@ return [
     'invalid_credentials'=>'Invalid Credentials',
     'user_not' => 'User does not exist',
      
+	'create_records' => 'Contact created successfully',
     'password_required' => 'Please enter your password.',
     'invalid_password'=>'Invalid Password',
     'valid_credential' => 'Please make sure either valid email or password',
