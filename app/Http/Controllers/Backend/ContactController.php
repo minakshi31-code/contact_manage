@@ -136,6 +136,9 @@ class ContactController extends Controller
 	
 	 
 	public function importFileContacts(Request $request){
+		
+		ini_set('memory_limit', '512M');
+        ini_set('max_execution_time', '90');
 		 
 	$file_mime_type = $request->import_file->getClientMimeType();
 	if($file_mime_type=='text/xml'){
@@ -168,7 +171,14 @@ class ContactController extends Controller
                         }
                     }
                     
-					Contacts::insert($dataArray);
+					if (!empty($dataArray)) {
+							$arrayChunked = array_chunk($dataArray, 100); //Chunk large array
+							//loop the array and insert it  
+							foreach ($arrayChunked as $arrayToSave) {
+								Contacts::insert($arrayToSave);
+							}
+					}
+
 					Session::flash('success','Data saved successfully and duplicate data has been ignored!');
 					return redirect()->route('contacts.index');
                  }
